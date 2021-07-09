@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'display'
+require_relative 'board'
 
 class Game
   include Display
@@ -53,13 +54,12 @@ class Game
   def new_game
     puts d_new_game
     set_player_names
+    new_chess_game_started
   end
 
   def set_player_names
     @player_one = set_name_for_player(1)
     @player_two = set_name_for_player(2)
-
-    puts "player one: #{@player_one}, player two: #{@player_two}"
   end
 
   def set_name_for_player(player_number)
@@ -75,5 +75,10 @@ class Game
 
     puts d_invalid_name
     print d_user_name_indicator
+  end
+
+  def new_chess_game_started
+    @board = Board.new
+    p @board.data
   end
 end
