@@ -58,11 +58,11 @@ class Game
   end
 
   def set_player_names
-    @player_one = set_name_for_player(1)
-    @player_two = set_name_for_player(2)
+    @player_one = name_for_player(1)
+    @player_two = name_for_player(2)
   end
 
-  def set_name_for_player(player_number)
+  def name_for_player(player_number)
     puts d_ask_player_name(player_number)
     print d_user_name_indicator
     player_name = gets.chomp
@@ -79,6 +79,27 @@ class Game
 
   def new_chess_game_started
     @board = Board.new
-    p @board.data
+    @board.order_pieces
+    @current_player = @player_one
+    until game_ended? || save_game?
+      player_turn(current_player)
+      current_player_change
+    end
+  end
+
+  def game_ended?
+    false
+  end
+
+  def save_game?
+    false
+  end
+
+  def player_turn(player)
+    true
+  end
+
+  def current_player_change
+    @current_player = @current_player == @player_one ? @player_two : @player_one
   end
 end
