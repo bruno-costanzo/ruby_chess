@@ -5,6 +5,6 @@ class Tower
 
   def initialize(color = nil)
     @color = color
-    @symbol = nil
+    @symbol = ["\u2656", "\u265C"]
   end
 end

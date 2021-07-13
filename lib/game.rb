@@ -60,6 +60,7 @@ class Game
   def set_player_names
     @player_one = name_for_player(1)
     @player_two = name_for_player(2)
+    puts both_players_well_created(@player_one, @player_two)
   end
 
   def name_for_player(player_number)
@@ -67,6 +68,7 @@ class Game
     print d_user_name_indicator
     player_name = gets.chomp
     player_name = gets.chomp until valid_player_name?(player_name)
+    puts player_created(player_name)
     player_name
   end
 
@@ -82,8 +84,11 @@ class Game
     @board.order_pieces
     @current_player = @player_one
     until game_ended? || save_game?
-      player_turn(current_player)
+      display_board(@board.grid)
+      player_turn(@current_player)
       current_player_change
+      puts 'ending'
+      break
     end
   end
 
@@ -96,6 +101,16 @@ class Game
   end
 
   def player_turn(player)
+    puts display_player_turn_msg(player)
+    piece_to_move = get_piece_to_move
+    true
+  end
+
+  def get_piece_to_move(piece = nil)
+    piece = gets.chomp until valid_piece_to_move?(piece)
+  end
+
+  def valid_piece_to_move?(piece)
     true
   end
 

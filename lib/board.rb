@@ -6,11 +6,13 @@ require_relative './pieces/knight'
 require_relative './pieces/pawn'
 require_relative './pieces/tower'
 require_relative './pieces/queen'
+require_relative 'display'
 
 class Board
   POSITIONS_ZERO = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [7, 0], [7, 7], [7, 1], [7, 6], [7, 2], [7, 5], [7, 3], [7, 4], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [0, 0], [0, 7], [0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4]]
 
 
+  include Display
   Slot = Struct.new(:color, :piece)
   attr_accessor :grid
 
@@ -33,10 +35,11 @@ class Board
   def set_up_new_board
     paint_board
     order_pieces
-    p @grid
+    display_board(@grid)
   end
 
   def order_pieces
+    paint_board
     total_pieces = half_pieces('white') + half_pieces('black')
     total_pieces.each do |piece_with_position|
       @grid[piece_with_position[1][0]][piece_with_position[1][1]].piece = piece_with_position[0]
@@ -78,7 +81,3 @@ class Board
     King.new(color)
   end
 end
-
-board = Board.new
-board.set_up_new_board
-

@@ -5,6 +5,6 @@ class Bishop
 
   def initialize(color = nil)
     @color = color
-    @symbol = nil
+    @symbol = ["\u2657", "\u265D"]
   end
 end

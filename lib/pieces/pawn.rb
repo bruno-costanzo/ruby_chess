@@ -5,6 +5,6 @@ class Pawn
 
   def initialize(color = nil)
     @color = color
-    @symbol = nil
+    @symbol = ["\u2659", "\u265F"]
   end
 end

@@ -5,6 +5,6 @@ class King
 
   def initialize(color = nil)
     @color = color
-    @symbol = nil
+    @symbol = ["\u2654", "\u265A"]
   end
 end
