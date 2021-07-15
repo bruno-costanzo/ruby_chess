@@ -16,9 +16,13 @@ class Board
   Slot = Struct.new(:color, :piece)
   attr_accessor :grid
 
-  def initialize(grid = Array.new(8) { Array.new(8) { Slot.new } }, pieces_positions = nil)
+  def initialize(player_one, player_two, grid = Array.new(8) { Array.new(8) { Slot.new } }, pieces_positions = nil)
     @grid = grid
     @pieces_position = pieces_positions
+    @white_pieces = nil
+    @black_pieces = nil
+    @player_white = player_one
+    @player_black = player_two
   end
 
   def paint_board
@@ -31,6 +35,8 @@ class Board
       end
     end
   end
+
+  # Set up new game methods
 
   def set_up_new_board
     paint_board
@@ -54,6 +60,8 @@ class Board
     2.times { result << [bishop(color), positions.shift] }
     result << [queen(color), positions.shift]
     result << [king(color), positions.shift]
+    @white_pieces = result if color == 'white'
+    @black_pieces = result if color == 'black'
     result
   end
 
@@ -79,5 +87,38 @@ class Board
 
   def king(color)
     King.new(color)
+  end
+
+  # valid_piece?
+
+  def valid_piece_selected?(piece, color)
+    position = parse_position(piece)
+    piece_there?(position) && valid_piece_color?(position, color)
+  end
+
+  def parse_position(piece)
+    column_letters = ('a'..'h').to_a
+    row_numbers = ('1'..'8').to_a.reverse
+    column = column_letters.index(piece.split('')[0])
+    row = row_numbers.index(piece.split('')[1])
+
+    [row, column]
+  end
+
+  def piece_there?(position)
+    slot = grid[position[0]][position[1]]
+    return true unless slot.piece.nil?
+
+    puts display_no_piece_there
+    false
+  end
+
+  def valid_piece_color?(position, color)
+    slot = grid[position[0]][position[1]]
+
+    return true if slot.piece.color == color
+
+    puts display_not_player_piece
+    false
   end
 end

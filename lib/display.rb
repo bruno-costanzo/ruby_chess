@@ -5,7 +5,7 @@ require 'colorize'
 module Display
 
   def d_welcome_msg
-    "Welcome to Chess\n\n"
+    "  Welcome to Chess  \n".colorize(:black).on_yellow
   end
 
   def d_invalid_option
@@ -17,7 +17,7 @@ module Display
   end
 
   def d_user_choice_indicator
-    "Option number \u2192 "
+    "Option number \u2192 ".colorize(:yellow)
   end
 
   def d_goodbye_msg
@@ -25,7 +25,7 @@ module Display
   end
 
   def d_new_game
-    "\nNew Game"
+    "\nNew Game".colorize(:cyan)
   end
 
   def d_ask_player_name(player_number)
@@ -41,17 +41,28 @@ module Display
   end
 
   def both_players_well_created(p1, p2)
-    "Both players well created.\nCyan pieces: #{p1}.\nBlack Pieces: #{p2}."
+    "Both players well created.\n\n\t" + "- Cyan pieces: #{p1}.".colorize(:cyan) + "\n\t- Black Pieces: #{p2}.".colorize(:white).on_black + "\n\n"
   end
 
   def player_created(player)
-    "Player created: #{player}"
+    "Player created: #{player}\n"
   end
 
   def display_player_turn_msg(player)
-    "#{player}, is your turn. Select the piece you want to move. Example: D2 or B1"
+    "#{player}, is your turn. Select the piece you want to move. Example: d2 or b1"
   end
 
+  def display_invalid_piece_to_move
+    'Invalid format. Check the grid and select column-row. Example: d2 or g1'
+  end
+
+  def display_valid_piece(piece)
+    "Piece in location #{piece.colorize(:yellow)} selected."
+  end
+
+  def display_select_slot_to_go(piece)
+    "Where do you want to move the piece placed at #{piece.colorize(:yellow)}?"
+  end
   # BOARD
 
   def display_board(grid)
@@ -69,5 +80,13 @@ module Display
       print "\n"
     end
     print "    A   B   C   D   E   F   G   H   \n\n"
+  end
+
+  def display_no_piece_there
+    'There is not a piece in that position.'
+  end
+
+  def display_not_player_piece
+    "That's not your piece. Please select a piece you own."
   end
 end

@@ -80,15 +80,13 @@ class Game
   end
 
   def new_chess_game_started
-    @board = Board.new
+    @board = Board.new(@player_one, @player_two)
     @board.order_pieces
     @current_player = @player_one
     until game_ended? || save_game?
       display_board(@board.grid)
       player_turn(@current_player)
       current_player_change
-      puts 'ending'
-      break
     end
   end
 
@@ -103,15 +101,42 @@ class Game
   def player_turn(player)
     puts display_player_turn_msg(player)
     piece_to_move = get_piece_to_move
-    true
+
+    puts display_select_slot_to_go(piece_to_move)
+    place_to_move = get_slot_to_go
   end
 
   def get_piece_to_move(piece = nil)
-    piece = gets.chomp until valid_piece_to_move?(piece)
+    piece = gets.chomp.downcase until valid_piece_to_move?(piece)
+
+    puts display_valid_piece(piece)
+    piece
+  end
+
+  def get_slot_to_go(place = nil)
+    place = gets.chomp.downcase until valid_place_to_go?(place)
+  end
+
+
+  def valid_place_to_go?(place)
+    return false if place.nil?
+
+    true if format_checker(place)
   end
 
   def valid_piece_to_move?(piece)
-    true
+    return false if piece.nil?
+
+    piece_color = @current_player == @player_one ? 'white' : 'black'
+
+    true if format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
+  end
+
+  def format_checker(piece)
+    return true if !piece.nil? && piece.size == 2 && piece[0].between?('a', 'h') && piece[1].between?('1', '8')
+
+    puts display_invalid_piece_to_move
+    false
   end
 
   def current_player_change
