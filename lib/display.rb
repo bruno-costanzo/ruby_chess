@@ -60,8 +60,17 @@ module Display
     "Piece in location #{piece.colorize(:yellow)} selected."
   end
 
-  def display_select_slot_to_go(piece)
-    "Where do you want to move the piece placed at #{piece.colorize(:yellow)}?"
+  def display_select_slot_to_go(piece, moves)
+    "Where do you want to move the piece placed at #{piece.colorize(:yellow)}? Posibilities: #{moves.to_s.gsub('"', '').colorize(:light_cyan)}"
+  end
+
+
+  def display_invalid_place_to_go(place, moves)
+    "You can't move the piece to #{place.colorize(:yellow)}. The options are: #{moves.to_s.gsub('"', '').colorize(:light_cyan)}"
+  end
+
+  def display_no_moves_available
+    'There is not available moves. Try again. Select the piece you want to move.'
   end
   # BOARD
 

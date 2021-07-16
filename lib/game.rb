@@ -98,12 +98,20 @@ class Game
     false
   end
 
-  def player_turn(player)
+  def player_turn(player, turn_finished = false)
     puts display_player_turn_msg(player)
-    piece_to_move = get_piece_to_move
-
-    puts display_select_slot_to_go(piece_to_move)
-    place_to_move = get_slot_to_go
+    until turn_finished
+      piece_to_move = get_piece_to_move
+      parsed_pos_moves = @board.get_pos_moves(piece_to_move)
+      if parsed_pos_moves.empty?
+        puts display_no_moves_available
+        next
+      end
+      puts display_select_slot_to_go(piece_to_move, parsed_pos_moves)
+      place_to_move = get_slot_to_go(parsed_pos_moves)
+      @board.move(piece_to_move, place_to_move)
+      turn_finished = true
+    end
   end
 
   def get_piece_to_move(piece = nil)
@@ -113,15 +121,19 @@ class Game
     piece
   end
 
-  def get_slot_to_go(place = nil)
-    place = gets.chomp.downcase until valid_place_to_go?(place)
+  def get_slot_to_go(moves, place = nil)
+    place = gets.chomp.downcase until valid_place_to_go?(place, moves)
+
+    place
   end
 
 
-  def valid_place_to_go?(place)
+  def valid_place_to_go?(place, moves)
     return false if place.nil?
 
-    true if format_checker(place)
+    return true if format_checker(place) && moves.include?(place)
+
+    puts display_invalid_place_to_go(place, moves)
   end
 
   def valid_piece_to_move?(piece)

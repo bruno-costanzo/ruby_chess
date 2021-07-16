@@ -23,6 +23,7 @@ class Board
     @black_pieces = nil
     @player_white = player_one
     @player_black = player_two
+    @death_pieces = nil
   end
 
   def paint_board
@@ -120,5 +121,26 @@ class Board
 
     puts display_not_player_piece
     false
+  end
+
+  def get_pos_moves(position)
+    piece_position = parse_position(position)
+    possible_moves = @grid[piece_position[0]][piece_position[1]].piece.possible_moves(piece_position, @grid)
+    possible_moves.map { |move| inversed_parse(move) }
+  end
+
+  def inversed_parse(position)
+    column_letters = ('a'..'h').to_a
+    row_numbers = ('1'..'8').to_a.reverse
+
+    "#{column_letters[position[1]]}#{row_numbers[position[0]]}"
+  end
+
+  def move(piece_position, place_to_go)
+    position = parse_position(piece_position)
+    place = parse_position(place_to_go)
+    @death_pieces = grid[place[0]][place[1]].piece unless grid[place[0]][place[1]].piece.nil?
+    @grid[place[0]][place[1]].piece = grid[position[0]][position[1]].piece
+    @grid[position[0]][position[1]].piece = nil
   end
 end
