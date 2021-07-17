@@ -13,7 +13,7 @@ class Tower
 
   def possible_moves(position, grid, moves = [])
     PATH_MVS.each do |path|
-      moves << tower_path_finder(position, grid, path)
+      moves << path_finder(position, grid, path)
     end
 
     moves.filter! { |move| !move.empty? }
@@ -21,7 +21,7 @@ class Tower
     moves.flatten(1)
   end
 
-  def tower_path_finder(position, grid, step, result = [])
+  def path_finder(position, grid, step, result = [])
     move = [position[0] + step[0], position[1] + step[1]]
 
     return result unless move[0].between?(0, 7) && move[1].between?(0, 7)
@@ -30,7 +30,7 @@ class Tower
 
     if slot.piece.nil?
       result << move
-      tower_path_finder(move, grid, step, result)
+      path_finder(move, grid, step, result)
     elsif slot.piece.color == @color
       result
     elsif slot.piece.color != @color
