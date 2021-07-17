@@ -9,12 +9,12 @@ require_relative './pieces/queen'
 require_relative 'display'
 
 class Board
-  POSITIONS_ZERO = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [7, 0], [7, 7], [7, 1], [7, 6], [7, 2], [7, 5], [7, 3], [7, 4], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [0, 0], [0, 7], [0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4]]
+  POSITIONS_ZERO = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [7, 0], [7, 7], [7, 1], [7, 6], [7, 2], [7, 5], [7, 3], [7, 4], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [0, 0], [0, 7], [0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4]].freeze
 
 
   include Display
   Slot = Struct.new(:color, :piece)
-  attr_accessor :grid
+  attr_accessor :grid, :death_pieces
 
   def initialize(player_one, player_two, grid = Array.new(8) { Array.new(8) { Slot.new } }, pieces_positions = nil)
     @grid = grid
@@ -23,7 +23,7 @@ class Board
     @black_pieces = nil
     @player_white = player_one
     @player_black = player_two
-    @death_pieces = nil
+    @death_pieces = []
   end
 
   def paint_board
@@ -139,8 +139,9 @@ class Board
   def move(piece_position, place_to_go)
     position = parse_position(piece_position)
     place = parse_position(place_to_go)
-    @death_pieces = grid[place[0]][place[1]].piece unless grid[place[0]][place[1]].piece.nil?
+    @death_pieces << grid[place[0]][place[1]].piece unless grid[place[0]][place[1]].piece.nil?
     @grid[place[0]][place[1]].piece = grid[position[0]][position[1]].piece
     @grid[position[0]][position[1]].piece = nil
+    p @death_pieces
   end
 end
