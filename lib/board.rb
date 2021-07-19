@@ -16,9 +16,8 @@ class Board
   Slot = Struct.new(:color, :piece)
   attr_accessor :grid, :death_pieces
 
-  def initialize(player_one, player_two, grid = Array.new(8) { Array.new(8) { Slot.new } }, pieces_positions = nil)
+  def initialize(player_one, player_two, grid = Array.new(8) { Array.new(8) { Slot.new } })
     @grid = grid
-    @pieces_position = pieces_positions
     @white_pieces = nil
     @black_pieces = nil
     @player_white = player_one
@@ -136,12 +135,11 @@ class Board
     "#{column_letters[position[1]]}#{row_numbers[position[0]]}"
   end
 
-  def move(piece_position, place_to_go)
+  def move(piece_position, place_to_go, grid = @grid)
     position = parse_position(piece_position)
     place = parse_position(place_to_go)
     @death_pieces << grid[place[0]][place[1]].piece unless grid[place[0]][place[1]].piece.nil?
-    @grid[place[0]][place[1]].piece = grid[position[0]][position[1]].piece
-    @grid[position[0]][position[1]].piece = nil
-    p @death_pieces
+    grid[place[0]][place[1]].piece = grid[position[0]][position[1]].piece
+    grid[position[0]][position[1]].piece = nil
   end
 end

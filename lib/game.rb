@@ -109,6 +109,7 @@ class Game
       end
       puts display_select_slot_to_go(piece_to_move, parsed_pos_moves)
       place_to_move = get_slot_to_go(parsed_pos_moves)
+      next if king_in_check(piece_to_move, place_to_move)
       @board.move(piece_to_move, place_to_move)
       turn_finished = true
     end
@@ -142,6 +143,19 @@ class Game
     piece_color = @current_player == @player_one ? 'white' : 'black'
 
     true if format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
+  end
+
+  def king_in_check(piece_to_move, place_to_move)
+    fake_board = Board.new(@player_one, @player_two)
+    fake_board.grid.each_with_index do |row, idx_row|
+      row.each_with_index do |slot, idx_column|
+        fake_board.grid[idx_row][idx_column] = @board.grid[idx_row][idx_column].clone
+      end
+    end
+    fake_board.move(piece_to_move, place_to_move, fake_board.grid)
+    display_board(@board.grid)
+    display_board(fake_board.grid)
+    false
   end
 
   def format_checker(piece)
