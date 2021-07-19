@@ -137,9 +137,19 @@ class Board
 
   def move(piece_position, place_to_go, grid = @grid)
     position = parse_position(piece_position)
+    grid[position[0]][position[1]].piece.moved = true if grid[position[0]][position[1]].piece.instance_of?(Pawn)
     place = parse_position(place_to_go)
     @death_pieces << grid[place[0]][place[1]].piece unless grid[place[0]][place[1]].piece.nil?
     grid[place[0]][place[1]].piece = grid[position[0]][position[1]].piece
     grid[position[0]][position[1]].piece = nil
+  end
+
+  def king_position(color, king_pos = nil)
+    @grid.each_with_index do |row, x|
+      row.each_with_index do |slot, y|
+        king_pos = [x, y] if slot&.piece.instance_of?(King) && slot.piece.color == color
+      end
+    end
+    king_pos
   end
 end

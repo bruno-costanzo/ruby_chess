@@ -110,6 +110,7 @@ class Game
       puts display_select_slot_to_go(piece_to_move, parsed_pos_moves)
       place_to_move = get_slot_to_go(parsed_pos_moves)
       next if king_in_check(piece_to_move, place_to_move)
+
       @board.move(piece_to_move, place_to_move)
       turn_finished = true
     end
@@ -145,17 +146,49 @@ class Game
     true if format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
   end
 
-  def king_in_check(piece_to_move, place_to_move)
-    fake_board = Board.new(@player_one, @player_two)
+  def king_in_check(piece_to_move, place_to_move, fake_board = Board.new(@player_one, @player_two))
+    color = @current_player == @player_one ? 'white' : 'black'
+    copy_original_board(fake_board)
+    fake_move(piece_to_move, place_to_move, fake_board)
+
+    king_pos = fake_board.king_position(color)
+
+    king_in_danger(fake_board, king_pos, color) && display_king_in_check(@current_player, piece_to_move)
+  end
+
+  def fake_move(piece_to_move, place_to_move, board, moved = nil)
+    position = board.parse_position(piece_to_move)
+    piece = board.grid[position[0]][position[1]].piece
+    moved = piece.moved if piece.instance_of?(Pawn)
+    board.move(piece_to_move, place_to_move, board.grid)
+    piece.moved = moved if piece.instance_of?(Pawn)
+  end
+
+  def king_in_danger(fake_board, king_pos, color, moves = [])
+    fake_board.grid.each_with_index do |row, x|
+      row.each_with_index do |slot, y|
+        moves = get_fake_moves(x, y, color, fake_board.grid) unless slot.piece.nil? || slot.piece.color == color
+
+        return true if moves.include?(king_pos)
+      end
+    end
+    false
+  end
+
+  def get_fake_moves(x, y, color, grid, result = [])
+    piece = grid[x][y].piece unless grid[x][y].piece.nil? || grid[x][y].piece.color == color
+    moved = piece.moved if piece.instance_of?(Pawn)
+    result = piece.possible_moves([x, y], grid)
+    piece.moved = moved if piece.instance_of?(Pawn)
+    result
+  end
+
+  def copy_original_board(fake_board)
     fake_board.grid.each_with_index do |row, idx_row|
       row.each_with_index do |slot, idx_column|
         fake_board.grid[idx_row][idx_column] = @board.grid[idx_row][idx_column].clone
       end
     end
-    fake_board.move(piece_to_move, place_to_move, fake_board.grid)
-    display_board(@board.grid)
-    display_board(fake_board.grid)
-    false
   end
 
   def format_checker(piece)

@@ -9,7 +9,7 @@ class Pawn
   POS_B_FIRST_MVS = [[1, 0], [2, 0]].freeze
   POS_B_ATTACK_MVS = [[1, 1], [1, -1]].freeze
 
-  attr_accessor :color, :symbol
+  attr_accessor :color, :symbol, :moved
 
   def initialize(color = nil)
     @color = color
@@ -28,13 +28,12 @@ class Pawn
 
   def pos_white_moves(position, grid, result = [])
     if !@moved
-      POS_W_FIRST_MVS.each do | move |
+      POS_W_FIRST_MVS.each do |move|
         new_move = [position[0] + move[0], position[1] + move[1]]
         result << new_move if grid[new_move[0]][new_move[1]].piece.nil?
-        @moved = true
       end
     else
-      POS_W_MVS.each do | move |
+      POS_W_MVS.each do |move|
         new_move = [position[0] + move[0], position[1] + move[1]]
         result << new_move if grid[new_move[0]][new_move[1]].piece.nil?
       end
@@ -52,7 +51,6 @@ class Pawn
       POS_B_FIRST_MVS.each do | move |
         new_move = [position[0] + move[0], position[1] + move[1]]
         result << new_move if grid[new_move[0]][new_move[1]].piece.nil?
-        @moved = true
       end
     else
       POS_B_MVS.each do | move |

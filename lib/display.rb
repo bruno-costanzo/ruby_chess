@@ -72,6 +72,12 @@ module Display
   def display_no_moves_available
     'There is not available moves. Try again. Select the piece you want to move.'
   end
+
+  def display_king_in_check(player, piece_to_move)
+    puts "#{player}, you can't make that move because your king would be in check. Select a piece to move again"
+
+    true
+  end
   # BOARD
 
   def display_board(grid)
