@@ -14,12 +14,12 @@ class Board
 
   include Display
   Slot = Struct.new(:color, :piece)
-  attr_accessor :grid, :death_pieces
+  attr_accessor :grid, :death_pieces, :white_king, :black_king
 
   def initialize(player_one, player_two, grid = Array.new(8) { Array.new(8) { Slot.new } })
     @grid = grid
-    @white_pieces = nil
-    @black_pieces = nil
+    @white_king = nil
+    @black_king = nil
     @player_white = player_one
     @player_black = player_two
     @death_pieces = []
@@ -60,8 +60,6 @@ class Board
     2.times { result << [bishop(color), positions.shift] }
     result << [queen(color), positions.shift]
     result << [king(color), positions.shift]
-    @white_pieces = result if color == 'white'
-    @black_pieces = result if color == 'black'
     result
   end
 
@@ -151,5 +149,24 @@ class Board
       end
     end
     king_pos
+  end
+
+  def check?(fake_board, king_pos, color, moves = [])
+    fake_board.grid.each_with_index do |row, x|
+      row.each_with_index do |slot, y|
+        moves = fake_board.get_fake_moves(x, y, color, fake_board.grid) unless slot.piece.nil? || slot.piece.color == color
+
+        return true if moves.include?(king_pos)
+      end
+    end
+    false
+  end
+
+  def get_fake_moves(x, y, color, grid, result = [])
+    piece = grid[x][y].piece unless grid[x][y].piece.nil? || grid[x][y].piece.color == color
+    moved = piece.moved if piece.instance_of?(Pawn)
+    result = piece.possible_moves([x, y], grid)
+    piece.moved = moved if piece.instance_of?(Pawn)
+    result
   end
 end

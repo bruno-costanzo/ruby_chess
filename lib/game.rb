@@ -90,8 +90,23 @@ class Game
     end
   end
 
-  def game_ended?
-    false
+  def game_ended?(white_king = false, black_king = false)
+    @board.grid.each do |row|
+      row.each do |slot|
+        white_king = true if slot&.piece.instance_of?(King) && slot.piece.color == 'white'
+        black_king = true if slot&.piece.instance_of?(King) && slot.piece.color == 'black'
+      end
+    end
+
+    return false if white_king && black_king
+
+    if !white_king
+      puts 'black win'
+    else
+      puts 'white win'
+    end
+
+    true
   end
 
   def save_game?
@@ -109,12 +124,18 @@ class Game
       end
       puts display_select_slot_to_go(piece_to_move, parsed_pos_moves)
       place_to_move = get_slot_to_go(parsed_pos_moves)
-      next if king_in_check(piece_to_move, place_to_move)
+      next if king_in_future_check(piece_to_move, place_to_move) && t
+       here_is_salvation?(piece_to_move, place_to_move)
 
       @board.move(piece_to_move, place_to_move)
       turn_finished = true
     end
   end
+
+  def there_is_salvation?(piece_pos, place_to_go)
+
+  end
+
 
   def get_piece_to_move(piece = nil)
     piece = gets.chomp.downcase until valid_piece_to_move?(piece)
@@ -146,14 +167,14 @@ class Game
     true if format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
   end
 
-  def king_in_check(piece_to_move, place_to_move, fake_board = Board.new(@player_one, @player_two))
+  def king_in_future_check(piece_to_move, place_to_move, fake_board = Board.new(@player_one, @player_two))
     color = @current_player == @player_one ? 'white' : 'black'
     copy_original_board(fake_board)
     fake_move(piece_to_move, place_to_move, fake_board)
 
     king_pos = fake_board.king_position(color)
 
-    king_in_danger(fake_board, king_pos, color) && display_king_in_check(@current_player, piece_to_move)
+    fake_board.check?(fake_board, king_pos, color) && display_king_in_check(@current_player, piece_to_move)
   end
 
   def fake_move(piece_to_move, place_to_move, board, moved = nil)
@@ -164,24 +185,6 @@ class Game
     piece.moved = moved if piece.instance_of?(Pawn)
   end
 
-  def king_in_danger(fake_board, king_pos, color, moves = [])
-    fake_board.grid.each_with_index do |row, x|
-      row.each_with_index do |slot, y|
-        moves = get_fake_moves(x, y, color, fake_board.grid) unless slot.piece.nil? || slot.piece.color == color
-
-        return true if moves.include?(king_pos)
-      end
-    end
-    false
-  end
-
-  def get_fake_moves(x, y, color, grid, result = [])
-    piece = grid[x][y].piece unless grid[x][y].piece.nil? || grid[x][y].piece.color == color
-    moved = piece.moved if piece.instance_of?(Pawn)
-    result = piece.possible_moves([x, y], grid)
-    piece.moved = moved if piece.instance_of?(Pawn)
-    result
-  end
 
   def copy_original_board(fake_board)
     fake_board.grid.each_with_index do |row, idx_row|
