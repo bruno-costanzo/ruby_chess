@@ -11,6 +11,7 @@ class Game
     @player_one = nil
     @player_two = nil
     @current_player = nil
+    @fake_board = nil
   end
 
   def play
@@ -124,16 +125,56 @@ class Game
       end
       puts display_select_slot_to_go(piece_to_move, parsed_pos_moves)
       place_to_move = get_slot_to_go(parsed_pos_moves)
-      next if king_in_future_check(piece_to_move, place_to_move) && t
-       here_is_salvation?(piece_to_move, place_to_move)
+
+      next if ilegal_move?(piece_to_move, place_to_move)
 
       @board.move(piece_to_move, place_to_move)
       turn_finished = true
+      check_warning
     end
   end
 
-  def there_is_salvation?(piece_pos, place_to_go)
+  def check_warning
+    white_king = @board.king_position('white')
+    black_king = @board.king_position('black')
+    if @board.check?(@board, white_king, 'white')
+      puts 'Warning! White King is in check.'
+      return 'white'
+    elsif @board.check?(@board, black_king, 'black')
+      puts 'Warning! black King is in check.'
+      return 'black'
+    end
 
+    return false
+  end
+
+
+  def own_king_in_future_check(piece_to_move, place_to_move, fake_board = Board.new(@player_one, @player_two))
+    color = @current_player == @player_one ? 'white' : 'black'
+    copy_original_board(fake_board)
+    fake_move(piece_to_move, place_to_move, fake_board)
+
+    king_pos = fake_board.king_position(color)
+
+    @fake_board = fake_board
+
+    fake_board.check?(fake_board, king_pos, color) && display_king_in_check(@current_player, piece_to_move)
+  end
+
+
+
+  def ilegal_move?(piece_to_move, place_to_move)
+    own_king_in_future_check(piece_to_move, place_to_move)
+  end
+
+  def get_all_pieces(color, pieces_and_pos = [])
+    @fake_board.grid.each_with_index do |row, x|
+      row.each_with_index do |slot, y|
+        pieces_and_pos << [slot.piece, [x, y]] unless slot.piece.nil? || slot.piece.color == color
+      end
+    end
+
+    pieces_and_pos
   end
 
 
@@ -167,15 +208,6 @@ class Game
     true if format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
   end
 
-  def king_in_future_check(piece_to_move, place_to_move, fake_board = Board.new(@player_one, @player_two))
-    color = @current_player == @player_one ? 'white' : 'black'
-    copy_original_board(fake_board)
-    fake_move(piece_to_move, place_to_move, fake_board)
-
-    king_pos = fake_board.king_position(color)
-
-    fake_board.check?(fake_board, king_pos, color) && display_king_in_check(@current_player, piece_to_move)
-  end
 
   def fake_move(piece_to_move, place_to_move, board, moved = nil)
     position = board.parse_position(piece_to_move)
@@ -184,7 +216,6 @@ class Game
     board.move(piece_to_move, place_to_move, board.grid)
     piece.moved = moved if piece.instance_of?(Pawn)
   end
-
 
   def copy_original_board(fake_board)
     fake_board.grid.each_with_index do |row, idx_row|

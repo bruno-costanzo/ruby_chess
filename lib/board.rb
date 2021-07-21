@@ -151,10 +151,10 @@ class Board
     king_pos
   end
 
-  def check?(fake_board, king_pos, color, moves = [])
-    fake_board.grid.each_with_index do |row, x|
+  def check?(board, king_pos, color, moves = [])
+    board.grid.each_with_index do |row, x|
       row.each_with_index do |slot, y|
-        moves = fake_board.get_fake_moves(x, y, color, fake_board.grid) unless slot.piece.nil? || slot.piece.color == color
+        moves = board.get_fake_moves(x, y, color, board.grid) unless slot.piece.nil? || slot.piece.color == color
 
         return true if moves.include?(king_pos)
       end
