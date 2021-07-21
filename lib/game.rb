@@ -122,7 +122,6 @@ class Game
       piece_to_move = parse_position(get_piece_to_move) until valid_piece_taken?(piece_to_move, moves)
       piece_end_moves = @board.get_piece_moves(piece_to_move, moves)
       puts display_select_slot_to_go(inversed_parse(piece_to_move), parsed_pos_moves(piece_end_moves))
-      p piece_end_moves
       place_to_move = parse_position(get_slot_to_go(parsed_pos_moves(piece_end_moves))) until piece_end_moves.include?(place_to_move)
       @board.move(piece_to_move, place_to_move)
       turn_finished = true
@@ -146,9 +145,13 @@ class Game
   end
 
   def valid_piece_taken?(piece_to_move, moves)
+    return false if piece_to_move.nil?
+
     moves.each do |move|
       return true if move[0] == piece_to_move
     end
+
+    puts 'invalid piece. select other,'
 
     false
   end
@@ -203,8 +206,6 @@ class Game
 
   def get_piece_to_move(piece = nil)
     piece = gets.chomp.downcase until valid_piece_to_move?(piece)
-
-    puts display_valid_piece(piece)
     piece
   end
 

@@ -172,7 +172,6 @@ class Board
   def check?(color, king_pos = king_position(color), moves = [])
     moves = self_check_moves(color)
     moves.each do |move|
-      # puts "#{move[0]}, #{move[1]}, #{king_pos}"
       return true if move[1] == king_pos
     end
     false
