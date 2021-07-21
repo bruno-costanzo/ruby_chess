@@ -120,23 +120,10 @@ class Board
     false
   end
 
-  def get_pos_moves(position)
-    piece_position = parse_position(position)
-    possible_moves = @grid[piece_position[0]][piece_position[1]].piece.possible_moves(piece_position, @grid)
-    possible_moves.map { |move| inversed_parse(move) }
-  end
 
-  def inversed_parse(position)
-    column_letters = ('a'..'h').to_a
-    row_numbers = ('1'..'8').to_a.reverse
 
-    "#{column_letters[position[1]]}#{row_numbers[position[0]]}"
-  end
-
-  def move(piece_position, place_to_go, grid = @grid)
-    position = parse_position(piece_position)
+  def move(position, place, grid = @grid)
     grid[position[0]][position[1]].piece.moved = true if grid[position[0]][position[1]].piece.instance_of?(Pawn)
-    place = parse_position(place_to_go)
     @death_pieces << grid[place[0]][place[1]].piece unless grid[place[0]][place[1]].piece.nil?
     grid[place[0]][place[1]].piece = grid[position[0]][position[1]].piece
     grid[position[0]][position[1]].piece = nil
@@ -151,22 +138,101 @@ class Board
     king_pos
   end
 
-  def check?(board, king_pos, color, moves = [])
-    board.grid.each_with_index do |row, x|
-      row.each_with_index do |slot, y|
-        moves = board.get_fake_moves(x, y, color, board.grid) unless slot.piece.nil? || slot.piece.color == color
 
-        return true if moves.include?(king_pos)
-      end
-    end
-    false
-  end
 
   def get_fake_moves(x, y, color, grid, result = [])
     piece = grid[x][y].piece unless grid[x][y].piece.nil? || grid[x][y].piece.color == color
     moved = piece.moved if piece.instance_of?(Pawn)
     result = piece.possible_moves([x, y], grid)
     piece.moved = moved if piece.instance_of?(Pawn)
+    result
+  end
+
+  # Player_turn
+
+  def player_turn_started(color)
+    possible_moves(color)
+
+  end
+
+  def possible_moves(color, result = [])
+    pieces_and_xy = get_all_pieces(color)
+    xy_and_moves = get_all_moves(pieces_and_xy)
+    xy_and_moves.select do |move|
+      king_in_safe?(move, opossite_color(color))
+    end
+  end
+
+  def king_in_safe?(move, color, fake_board = Board.new(@player_white, @player_black))
+    copy_original_board(fake_board)
+    fake_board.fake_move(move[0], move[1])
+    !fake_board.check?(color)
+  end
+
+  def check?(color, king_pos = king_position(color), moves = [])
+    moves = self_check_moves(color)
+    moves.each do |move|
+      # puts "#{move[0]}, #{move[1]}, #{king_pos}"
+      return true if move[1] == king_pos
+    end
+    false
+  end
+
+  def self_check_moves(color, result = [])
+    pieces_and_xy = get_all_pieces(color)
+    get_all_moves(pieces_and_xy)
+  end
+
+  def copy_original_board(fake_board)
+    fake_board.grid.each_with_index do |row, idx_row|
+      row.each_with_index do |slot, idx_column|
+        fake_board.grid[idx_row][idx_column] = grid[idx_row][idx_column].clone
+      end
+    end
+  end
+
+  def fake_move(position, place_to_move, moved = nil)
+    piece = grid[position[0]][position[1]].piece
+    moved = piece.moved if piece.instance_of?(Pawn)
+    move(position, place_to_move, grid)
+    piece.moved = moved if piece.instance_of?(Pawn)
+  end
+
+  def opossite_color(color)
+    color == 'white' ? 'black' : 'white'
+  end
+
+  def get_all_moves(pieces_and_xy, result = [])
+    pieces_and_xy.each do |piece_and_xy|
+      piece_and_xy[0].possible_moves(piece_and_xy[1], grid).each do |pos_move|
+        result << [piece_and_xy[1], pos_move]
+      end
+    end
+    result
+  end
+
+  def get_all_pieces(color, pieces_and_pos = [])
+    grid.each_with_index do |row, x|
+      row.each_with_index do |slot, y|
+        pieces_and_pos << [slot.piece, [x, y]] unless slot.piece.nil? || slot.piece.color == color
+      end
+    end
+
+    pieces_and_pos
+  end
+
+  def get_piece_to_move(piece = nil)
+    piece = gets.chomp.downcase until valid_piece_to_move?(piece)
+
+    puts display_valid_piece(piece)
+    piece
+  end
+
+  def get_piece_moves(piece, moves, result = [])
+    moves.each do |move|
+      result << move[1] if move[0] == piece
+    end
+
     result
   end
 end

@@ -116,22 +116,45 @@ class Game
 
   def player_turn(player, turn_finished = false)
     puts display_player_turn_msg(player)
+
     until turn_finished
-      piece_to_move = get_piece_to_move
-      parsed_pos_moves = @board.get_pos_moves(piece_to_move)
-      if parsed_pos_moves.empty?
-        puts display_no_moves_available
-        next
-      end
-      puts display_select_slot_to_go(piece_to_move, parsed_pos_moves)
-      place_to_move = get_slot_to_go(parsed_pos_moves)
-
-      next if ilegal_move?(piece_to_move, place_to_move)
-
+      moves = @board.player_turn_started(get_player_color)
+      piece_to_move = parse_position(get_piece_to_move) until valid_piece_taken?(piece_to_move, moves)
+      piece_end_moves = @board.get_piece_moves(piece_to_move, moves)
+      puts display_select_slot_to_go(inversed_parse(piece_to_move), parsed_pos_moves(piece_end_moves))
+      p piece_end_moves
+      place_to_move = parse_position(get_slot_to_go(parsed_pos_moves(piece_end_moves))) until piece_end_moves.include?(place_to_move)
       @board.move(piece_to_move, place_to_move)
       turn_finished = true
       check_warning
     end
+  end
+
+  def parsed_pos_moves(moves, result = [])
+    moves.each do |move|
+      result << inversed_parse(move)
+    end
+
+    result
+  end
+
+  def inversed_parse(position)
+    column_letters = ('a'..'h').to_a
+    row_numbers = ('1'..'8').to_a.reverse
+
+    "#{column_letters[position[1]]}#{row_numbers[position[0]]}"
+  end
+
+  def valid_piece_taken?(piece_to_move, moves)
+    moves.each do |move|
+      return true if move[0] == piece_to_move
+    end
+
+    false
+  end
+
+  def get_player_color
+    @current_player == @player_one ? 'black' : 'white'
   end
 
   def check_warning
@@ -234,5 +257,14 @@ class Game
 
   def current_player_change
     @current_player = @current_player == @player_one ? @player_two : @player_one
+  end
+
+  def parse_position(piece)
+    column_letters = ('a'..'h').to_a
+    row_numbers = ('1'..'8').to_a.reverse
+    column = column_letters.index(piece.split('')[0])
+    row = row_numbers.index(piece.split('')[1])
+
+    [row, column]
   end
 end
