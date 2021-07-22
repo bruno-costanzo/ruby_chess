@@ -138,8 +138,6 @@ class Board
     king_pos
   end
 
-
-
   def get_fake_moves(x, y, color, grid, result = [])
     piece = grid[x][y].piece unless grid[x][y].piece.nil? || grid[x][y].piece.color == color
     moved = piece.moved if piece.instance_of?(Pawn)
@@ -175,6 +173,14 @@ class Board
       return true if move[1] == king_pos
     end
     false
+  end
+
+  def checkmate?(color, moves)
+    moves.each do |move|
+      return false if king_in_safe?(move, color)
+    end
+
+    true
   end
 
   def self_check_moves(color, result = [])

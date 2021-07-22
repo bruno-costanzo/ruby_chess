@@ -2,9 +2,13 @@
 
 require_relative 'display'
 require_relative 'board'
+require_relative 'database'
 
 class Game
+  attr_accessor :current_player, :board, :player_one, :player_two
+
   include Display
+  include Database
 
   def initialize
     @board = nil
@@ -28,7 +32,13 @@ class Game
       user_choice = menu_options
       case user_choice
       when 1
-        puts 'LOADING GAME...'
+        loaded_game = load_game
+        @board = loaded_game.board
+        @player_one = loaded_game.player_one
+        @player_two = loaded_game.player_two
+        @current_player = loaded_game.current_player
+        current_player_change
+        game_workflow
       when 2
         new_game
       when 3
@@ -80,53 +90,59 @@ class Game
     print d_user_name_indicator
   end
 
-  def new_chess_game_started
+  def new_chess_game_started(save = false)
     @board = Board.new(@player_one, @player_two)
     @board.order_pieces
     @current_player = @player_one
-    until game_ended? || save_game?
+    moves = @board.player_turn_started(player_color)
+    game_workflow
+  end
+
+  def game_workflow(save = false, moves = @board.player_turn_started(player_color))
+    until game_ended? || save
       display_board(@board.grid)
-      player_turn(@current_player)
+      save = player_turn(@current_player, moves)
       current_player_change
+      moves = @board.player_turn_started(player_color)
     end
+
+    save_game if save
   end
 
-  def game_ended?(white_king = false, black_king = false)
-    @board.grid.each do |row|
-      row.each do |slot|
-        white_king = true if slot&.piece.instance_of?(King) && slot.piece.color == 'white'
-        black_king = true if slot&.piece.instance_of?(King) && slot.piece.color == 'black'
-      end
-    end
-
-    return false if white_king && black_king
-
-    if !white_king
-      puts 'black win'
-    else
-      puts 'white win'
-    end
-
-    true
+  def save_game
+    db_save_game
   end
 
-  def save_game?
+  def game_ended?(moves = @board.player_turn_started(player_color), wking = @board.king_position('white'), bking = @board.king_position('black'))
+
+    if moves.empty? || wking.nil? || bking.nil?
+      current_player_change
+      display_board(@board.grid)
+      puts display_checkmate(@current_player)
+      return true
+    end
+
     false
   end
 
-  def player_turn(player, turn_finished = false)
+  def player_turn(player, moves)
     puts display_player_turn_msg(player)
+    check_warning(moves)
+    piece_to_move = parse_position(get_piece_to_move) until valid_piece_taken?(piece_to_move, moves)
 
-    until turn_finished
-      moves = @board.player_turn_started(get_player_color)
-      piece_to_move = parse_position(get_piece_to_move) until valid_piece_taken?(piece_to_move, moves)
-      piece_end_moves = @board.get_piece_moves(piece_to_move, moves)
-      puts display_select_slot_to_go(inversed_parse(piece_to_move), parsed_pos_moves(piece_end_moves))
-      place_to_move = parse_position(get_slot_to_go(parsed_pos_moves(piece_end_moves))) until piece_end_moves.include?(place_to_move)
-      @board.move(piece_to_move, place_to_move)
-      turn_finished = true
-      check_warning
-    end
+    return true if save_the_game?(piece_to_move)
+
+    piece_end_moves = @board.get_piece_moves(piece_to_move, moves)
+    puts display_select_slot_to_go(inversed_parse(piece_to_move), parsed_pos_moves(piece_end_moves))
+    place_to_move = parse_position(get_slot_to_go(parsed_pos_moves(piece_end_moves))) until piece_end_moves.include?(place_to_move)
+    @board.move(piece_to_move, place_to_move)
+    false
+  end
+
+
+  def save_the_game?(piece)
+    return false if piece.instance_of?(Array)
+    return true if "sS".include?(piece)
   end
 
   def parsed_pos_moves(moves, result = [])
@@ -151,58 +167,28 @@ class Game
       return true if move[0] == piece_to_move
     end
 
-    puts 'invalid piece. select other,'
+    return true if piece_to_move.instance_of?(String) && 'sS'.include?(piece_to_move)
+
+    puts display_invalid_piece_taken(inversed_parse(piece_to_move))
 
     false
   end
 
-  def get_player_color
+  def player_color
     @current_player == @player_one ? 'black' : 'white'
   end
 
-  def check_warning
+  def check_warning(moves)
     white_king = @board.king_position('white')
     black_king = @board.king_position('black')
     if @board.check?(@board, white_king, 'white')
-      puts 'Warning! White King is in check.'
-      return 'white'
+      puts display_check_warning('white')
     elsif @board.check?(@board, black_king, 'black')
-      puts 'Warning! black King is in check.'
-      return 'black'
+      puts display_check_warning('black')
     end
 
-    return false
+    false
   end
-
-
-  def own_king_in_future_check(piece_to_move, place_to_move, fake_board = Board.new(@player_one, @player_two))
-    color = @current_player == @player_one ? 'white' : 'black'
-    copy_original_board(fake_board)
-    fake_move(piece_to_move, place_to_move, fake_board)
-
-    king_pos = fake_board.king_position(color)
-
-    @fake_board = fake_board
-
-    fake_board.check?(fake_board, king_pos, color) && display_king_in_check(@current_player, piece_to_move)
-  end
-
-
-
-  def ilegal_move?(piece_to_move, place_to_move)
-    own_king_in_future_check(piece_to_move, place_to_move)
-  end
-
-  def get_all_pieces(color, pieces_and_pos = [])
-    @fake_board.grid.each_with_index do |row, x|
-      row.each_with_index do |slot, y|
-        pieces_and_pos << [slot.piece, [x, y]] unless slot.piece.nil? || slot.piece.color == color
-      end
-    end
-
-    pieces_and_pos
-  end
-
 
   def get_piece_to_move(piece = nil)
     piece = gets.chomp.downcase until valid_piece_to_move?(piece)
@@ -214,7 +200,6 @@ class Game
 
     place
   end
-
 
   def valid_place_to_go?(place, moves)
     return false if place.nil?
@@ -229,24 +214,7 @@ class Game
 
     piece_color = @current_player == @player_one ? 'white' : 'black'
 
-    true if format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
-  end
-
-
-  def fake_move(piece_to_move, place_to_move, board, moved = nil)
-    position = board.parse_position(piece_to_move)
-    piece = board.grid[position[0]][position[1]].piece
-    moved = piece.moved if piece.instance_of?(Pawn)
-    board.move(piece_to_move, place_to_move, board.grid)
-    piece.moved = moved if piece.instance_of?(Pawn)
-  end
-
-  def copy_original_board(fake_board)
-    fake_board.grid.each_with_index do |row, idx_row|
-      row.each_with_index do |slot, idx_column|
-        fake_board.grid[idx_row][idx_column] = @board.grid[idx_row][idx_column].clone
-      end
-    end
+    true if 'sS'.include?(piece) || format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
   end
 
   def format_checker(piece)
@@ -261,6 +229,7 @@ class Game
   end
 
   def parse_position(piece)
+    return piece if 'sS'.include?(piece)
     column_letters = ('a'..'h').to_a
     row_numbers = ('1'..'8').to_a.reverse
     column = column_letters.index(piece.split('')[0])

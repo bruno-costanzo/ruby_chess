@@ -64,7 +64,6 @@ module Display
     "Where do you want to move the piece placed at #{piece.colorize(:yellow)}? Posibilities: #{moves.to_s.gsub('"', '').colorize(:light_cyan)}"
   end
 
-
   def display_invalid_place_to_go(place, moves)
     "You can't move the piece to #{place.colorize(:yellow)}. The options are: #{moves.to_s.gsub('"', '').colorize(:light_cyan)}"
   end
@@ -77,6 +76,18 @@ module Display
     puts "#{player}, you can't make that move because your king would be in check. Select a piece to move again"
 
     true
+  end
+
+  def display_invalid_piece_taken(piece_to_move)
+    "The piece in #{piece_to_move.colorize(:yellow)} has no movements available. Select another piece to move"
+  end
+
+  def display_check_warning(color)
+    "Warning!".colorize(:light_red) + " #{color.colorize(:yellow)} king is in check!"
+  end
+
+  def display_checkmate(player)
+    "CHECKMATE!\nCongratulations, #{player.colorize(:yellow)}, you won!"
   end
   # BOARD
 
