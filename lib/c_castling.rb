@@ -3,8 +3,11 @@
 
 module Castling
 
-  def valid_castling
+  def valid_castling(king, tower, king_pos, tower_pos)
     if !king.moved && !tower.moved && !pieces_between && !check && row_no_attacked(row_between_maker(king_x, lower, higher))
+      (king[1] - tower[1]).positive ? short_castling : long_castling
+    else
+      puts 'invalid castling'
     end
   end
 
