@@ -130,6 +130,10 @@ class Game
     check_warning(moves)
     piece_to_move = parse_position(get_piece_to_move) until valid_piece_taken?(piece_to_move, moves)
 
+    if piece_to_move == 'ca' || piece_to_move == 'ch'
+      puts 'castling...'
+      return false
+    end
     return true if save_the_game?(piece_to_move)
 
     piece_end_moves = @board.get_piece_moves(piece_to_move, moves)
@@ -172,9 +176,9 @@ return true if "sS".include?(piece)
       return true if move[0] == piece_to_move
     end
 
-    return true if piece_to_move.instance_of?(String) && 'sS'.include?(piece_to_move)
+    return true if (piece_to_move.instance_of?(String) && 'sS'.include?(piece_to_move)) || ((piece_to_move == 'ca' || piece_to_move == 'ch') && @board.valid_castling_caller(piece_to_move, player_turn_color))
 
-    puts display_invalid_piece_taken(inversed_parse(piece_to_move))
+    puts display_invalid_piece_taken(inversed_parse(piece_to_move)) unless piece_to_move == 'ca' || piece_to_move == 'ch'
 
     false
   end
@@ -219,7 +223,7 @@ return true if "sS".include?(piece)
 
     piece_color = @current_player == @player_one ? 'white' : 'black'
 
-    true if 'sS'.include?(piece) || format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
+    true if piece == 'ca' || piece == 'ch' || 'sS'.include?(piece) || format_checker(piece) && @board.valid_piece_selected?(piece, piece_color)
   end
 
   def format_checker(piece)
@@ -234,7 +238,7 @@ return true if "sS".include?(piece)
   end
 
   def parse_position(piece)
-    return piece if 'sS'.include?(piece)
+    return piece if 'sS'.include?(piece) || piece == 'ca' || piece == 'ch'
 
     column_letters = ('a'..'h').to_a
     row_numbers = ('1'..'8').to_a.reverse

@@ -7,12 +7,14 @@ require_relative './pieces/pawn'
 require_relative './pieces/tower'
 require_relative './pieces/queen'
 require_relative 'display'
+require_relative 'c_castling'
 
 class Board
   POSITIONS_ZERO = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [7, 0], [7, 7], [7, 1], [7, 6], [7, 2], [7, 5], [7, 3], [7, 4], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [0, 0], [0, 7], [0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4]].freeze
 
-
   include Display
+  include Castling
+
   Slot = Struct.new(:color, :piece)
   attr_accessor :grid, :death_pieces, :white_king, :black_king
 
@@ -120,10 +122,39 @@ class Board
     false
   end
 
+  def valid_castling_caller(piece_to_move, color)
+    if piece_to_move == 'ca' && color == 'white'
+      king = @grid[7][4].piece
+      tower = @grid[7][0].piece
+      king_pos = [7, 4]
+      tower_pos = [7, 0]
+    elsif piece_to_move == 'ca' && color == 'black'
+      king = @grid[0][4].piece
+      tower = @grid[0][0].piece
+      king_pos = [0, 4]
+      tower_pos = [0, 0]
+    elsif piece_to_move == 'ch' && color == 'white'
+      king = @grid[7][4].piece
+      tower = @grid[7][7].piece
+      king_pos = [7, 4]
+      tower_pos = [7, 7]
+    elsif piece_to_move == 'ch' && color == 'black'
+      king = @grid[0][4].piece
+      tower = @grid[0][7].piece
+      king_pos = [0, 4]
+      tower_pos = [0, 7]
+    end
+
+    return false unless king.instance_of?(King) && tower.instance_of?(Tower)
+
+    valid_castling(king, tower, king_pos, tower_pos)
+  end
+
 
 
   def move(position, place, grid = @grid)
-    grid[position[0]][position[1]].piece.moved = true if grid[position[0]][position[1]].piece.instance_of?(Pawn, King, Tower)
+    piece = grid[position[0]][position[1]].piece
+    piece.moved = true if piece.instance_of?(Pawn) || piece.instance_of?(Tower) || piece.instance_of?(King)
     @death_pieces << grid[place[0]][place[1]].piece unless grid[place[0]][place[1]].piece.nil?
     grid[place[0]][place[1]].piece = grid[position[0]][position[1]].piece
     grid[position[0]][position[1]].piece = nil

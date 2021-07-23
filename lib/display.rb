@@ -50,7 +50,7 @@ module Display
   end
 
   def display_player_turn_msg(player)
-    "#{player}, is your turn. Select the piece you want to move. Example: d2 or b1"
+    "#{player}, is your turn. Select the piece you want to move. Example: d2 or b1. ca and ch por castling to A or H"
   end
 
   def display_invalid_piece_to_move
