@@ -240,4 +240,22 @@ class Board
 
     result
   end
+
+  def pawn_to_queen(slot_xy, color)
+    @grid[slot_xy[0]][slot_xy[1]].piece = Queen.new(color)
+  end
+
+  def pawn_end_board?(position)
+    piece = @grid[position[0]][position[1]].piece
+    return true if piece.instance_of?(Pawn) && end_of_board?(piece.color, position[0])
+
+    false
+  end
+
+  def end_of_board?(color, row)
+    p color, row
+    return true if color == 'white' && row.zero? || color == 'black' && row == 7
+
+    false
+  end
 end

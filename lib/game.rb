@@ -136,13 +136,18 @@ class Game
     puts display_select_slot_to_go(inversed_parse(piece_to_move), parsed_pos_moves(piece_end_moves))
     place_to_move = parse_position(get_slot_to_go(parsed_pos_moves(piece_end_moves))) until piece_end_moves.include?(place_to_move)
     @board.move(piece_to_move, place_to_move)
-    false
-  end
+    @board.pawn_to_queen(place_to_move, player_turn_color) if @board.pawn_end_board?(place_to_move)
 
+    false
+end
 
   def save_the_game?(piece)
     return false if piece.instance_of?(Array)
-    return true if "sS".include?(piece)
+return true if "sS".include?(piece)
+  end
+
+  def player_turn_color
+    @current_player == @player_one ? 'white' : 'black'
   end
 
   def parsed_pos_moves(moves, result = [])
@@ -230,6 +235,7 @@ class Game
 
   def parse_position(piece)
     return piece if 'sS'.include?(piece)
+
     column_letters = ('a'..'h').to_a
     row_numbers = ('1'..'8').to_a.reverse
     column = column_letters.index(piece.split('')[0])
