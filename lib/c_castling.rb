@@ -38,4 +38,17 @@ module Castling
 
     false
   end
+
+  def short_castling(row)
+    @grid[row][5].piece = @grid[row][7].piece.clone
+    @grid[row][7].piece = nil
+    @grid[row][6].piece = @grid[row][4].piece.clone
+    @grid[row][4].piece = nil
+
+    @grid[row][6].piece.moved = true
+    @grid[row][5].piece.moved = true
+  end
+
+  def long_castling(row)
+  end
 end
