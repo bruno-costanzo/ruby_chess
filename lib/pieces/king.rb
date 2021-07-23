@@ -2,11 +2,12 @@
 
 class King
   POS_MVS = [[1, 1], [-1, 1], [-1, -1], [1, -1], [1, 0], [0, 1], [-1, 0], [0, -1]].freeze
-  attr_accessor :color, :symbol
+  attr_accessor :color, :symbol, :moved
 
   def initialize(color = nil)
     @color = color
     @symbol = ["\u2654", "\u265A"]
+    @moved
   end
 
   def possible_moves(position, grid, result = [])

@@ -123,7 +123,7 @@ class Board
 
 
   def move(position, place, grid = @grid)
-    grid[position[0]][position[1]].piece.moved = true if grid[position[0]][position[1]].piece.instance_of?(Pawn)
+    grid[position[0]][position[1]].piece.moved = true if grid[position[0]][position[1]].piece.instance_of?(Pawn, King, Tower)
     @death_pieces << grid[place[0]][place[1]].piece unless grid[place[0]][place[1]].piece.nil?
     grid[place[0]][place[1]].piece = grid[position[0]][position[1]].piece
     grid[position[0]][position[1]].piece = nil
@@ -198,9 +198,9 @@ class Board
 
   def fake_move(position, place_to_move, moved = nil)
     piece = grid[position[0]][position[1]].piece
-    moved = piece.moved if piece.instance_of?(Pawn)
+    moved = piece.moved if piece.instance_of?(Pawn) || piece.instance_of?(King) || piece.instance_of?(Tower)
     move(position, place_to_move, grid)
-    piece.moved = moved if piece.instance_of?(Pawn)
+    piece.moved = moved if piece.instance_of?(Pawn) || piece.instance_of?(King) || piece.instance_of?(Tower)
   end
 
   def opossite_color(color)

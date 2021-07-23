@@ -3,7 +3,7 @@
 class Tower
   PATH_MVS = [[1, 0], [0, 1], [-1, 0], [0, -1]].freeze
 
-  attr_accessor :color, :symbol
+  attr_accessor :color, :symbol, :moved
 
   def initialize(color = nil)
     @color = color
